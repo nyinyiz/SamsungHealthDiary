@@ -15,6 +15,9 @@ import androidx.navigation.compose.rememberNavController
 import com.samsung.android.health.sdk.sample.healthdiary.navigation.HealthDiaryNavigation
 import com.samsung.android.health.sdk.sample.healthdiary.ui.theme.HealthDiaryTheme
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

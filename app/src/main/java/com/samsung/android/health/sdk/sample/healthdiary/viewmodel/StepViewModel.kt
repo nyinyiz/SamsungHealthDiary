@@ -1,32 +1,34 @@
-/*
- * Copyright (C) 2024 Samsung Electronics Co., Ltd. All rights reserved
- */
 package com.samsung.android.health.sdk.sample.healthdiary.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.samsung.android.health.sdk.sample.healthdiary.utils.AppConstants
+import com.samsung.android.health.sdk.sample.healthdiary.domain.model.StepData
+import com.samsung.android.health.sdk.sample.healthdiary.domain.usecase.GetStepsUseCase
+import com.samsung.android.health.sdk.sample.healthdiary.domain.usecase.GetTotalStepsUseCase
+import com.samsung.android.health.sdk.sample.healthdiary.domain.usecase.GetWeeklyStepsUseCase
 import com.samsung.android.health.sdk.sample.healthdiary.utils.dateFormat
-import com.samsung.android.sdk.health.data.HealthDataStore
-import com.samsung.android.sdk.health.data.data.AggregatedData
-import com.samsung.android.sdk.health.data.request.DataType
-import com.samsung.android.sdk.health.data.request.LocalTimeFilter
-import com.samsung.android.sdk.health.data.request.LocalTimeGroup
-import com.samsung.android.sdk.health.data.request.LocalTimeGroupUnit
-import com.samsung.android.sdk.health.data.request.Ordering
-import com.samsung.android.sdk.health.data.response.DataResponse
-import kotlinx.coroutines.CoroutineExceptionHandler
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.time.LocalDateTime
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import java.time.LocalDate
+import java.time.LocalDateTime
+import javax.inject.Inject
 
-class StepViewModel(private val healthDataStore: HealthDataStore) :
-    ViewModel() {
+@HiltViewModel
+class StepViewModel @Inject constructor(
+    private val getStepsUseCase: GetStepsUseCase,
+    private val getTotalStepsUseCase: GetTotalStepsUseCase,
+    private val getWeeklyStepsUseCase: GetWeeklyStepsUseCase
+) : ViewModel() {
 
-    private val _totalStepCountData = MutableStateFlow<List<AggregatedData<Long>>>(emptyList())
-    val totalStepCountData: StateFlow<List<AggregatedData<Long>>> = _totalStepCountData.asStateFlow()
+    private val _totalStepCountData = MutableStateFlow<List<StepData>>(emptyList())
+    val totalStepCountData: StateFlow<List<StepData>> = _totalStepCountData.asStateFlow()
+
+    private val _weeklyStepData = MutableStateFlow<List<StepData>>(emptyList())
+    val weeklyStepData: StateFlow<List<StepData>> = _weeklyStepData.asStateFlow()
 
     private val _totalStepCount = MutableStateFlow("0")
     val totalStepCount: StateFlow<String> = _totalStepCount.asStateFlow()
@@ -37,42 +39,68 @@ class StepViewModel(private val healthDataStore: HealthDataStore) :
     private val _exceptionResponse = MutableStateFlow<Throwable?>(null)
     val exceptionResponse: StateFlow<Throwable?> = _exceptionResponse.asStateFlow()
 
-    private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
-        viewModelScope.launch {
-            _exceptionResponse.emit(exception)
-        }
-    }
-
     fun readStepData(dateTime: LocalDateTime) {
+        Timber.d("StepViewModel: Reading step data for $dateTime")
         _dayStartTimeAsText.value = dateTime.format(dateFormat)
+        
+        val date = dateTime.toLocalDate()
 
-        val localtimeFilter = LocalTimeFilter.of(dateTime, dateTime.plusDays(1))
-        val localTimeGroup = LocalTimeGroup.of(LocalTimeGroupUnit.HOURLY, 1)
-        val aggregateRequest = DataType.StepsType.TOTAL.requestBuilder
-            .setLocalTimeFilterWithGroup(localtimeFilter, localTimeGroup)
-            .setOrdering(Ordering.ASC)
-            .build()
+        viewModelScope.launch {
+            // Fetch step data using use case
+            getStepsUseCase(date)
+                .onSuccess { stepDataList ->
+                    _totalStepCountData.value = stepDataList
+                    Timber.d("StepViewModel: Loaded ${stepDataList.size} step records")
+                }
+                .onFailure { error ->
+                    Timber.e(error, "StepViewModel: Failed to load step data")
+                    _exceptionResponse.value = error
+                }
 
-        /**  Make SDK call to read step data */
-        viewModelScope.launch(AppConstants.SCOPE_IO_DISPATCHERS + exceptionHandler) {
-            val result = healthDataStore.aggregateData(aggregateRequest)
-            processAggregateDataResponse(result)
+            // Fetch total step count
+            getTotalStepsUseCase(date)
+                .onSuccess { total ->
+                    _totalStepCount.value = total.toString()
+                    Timber.d("StepViewModel: Total steps = $total")
+                }
+                .onFailure { error ->
+                    Timber.e(error, "StepViewModel: Failed to load total steps")
+                    _exceptionResponse.value = error
+                }
         }
     }
 
-    private fun processAggregateDataResponse(
-        result: DataResponse<AggregatedData<Long>>
-    ) {
-        val stepCount = ArrayList<AggregatedData<Long>>()
-        var totalSteps: Long = 0
+    private val _monthlyStepData = MutableStateFlow<List<StepData>>(emptyList())
+    val monthlyStepData: StateFlow<List<StepData>> = _monthlyStepData.asStateFlow()
 
-        result.dataList.forEach { stepData ->
-            val hourlySteps = stepData.value as Long
-            totalSteps += hourlySteps
-            stepCount.add(stepData)
+    fun readWeeklySteps(startDate: LocalDate, endDate: LocalDate) {
+        Timber.d("StepViewModel: Reading weekly steps from $startDate to $endDate")
+        viewModelScope.launch {
+            getWeeklyStepsUseCase(startDate, endDate)
+                .onSuccess { stepDataList ->
+                    _weeklyStepData.value = stepDataList
+                    Timber.d("StepViewModel: Loaded ${stepDataList.size} daily records")
+                }
+                .onFailure { error ->
+                    Timber.e(error, "StepViewModel: Failed to load weekly steps")
+                    _exceptionResponse.value = error
+                }
         }
-        _totalStepCount.value = totalSteps.toString()
-        _totalStepCountData.value = stepCount
+    }
+
+    fun readMonthlySteps(startDate: LocalDate, endDate: LocalDate) {
+        Timber.d("StepViewModel: Reading monthly steps from $startDate to $endDate")
+        viewModelScope.launch {
+            getWeeklyStepsUseCase(startDate, endDate)
+                .onSuccess { stepDataList ->
+                    _monthlyStepData.value = stepDataList
+                    Timber.d("StepViewModel: Loaded ${stepDataList.size} daily records for month")
+                }
+                .onFailure { error ->
+                    Timber.e(error, "StepViewModel: Failed to load monthly steps")
+                    _exceptionResponse.value = error
+                }
+        }
     }
 
     fun setDefaultValueToExceptionResponse() {

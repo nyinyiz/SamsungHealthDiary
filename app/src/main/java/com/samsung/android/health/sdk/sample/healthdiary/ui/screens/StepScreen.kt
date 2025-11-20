@@ -45,11 +45,13 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StepScreen(
     onNavigateBack: () -> Unit,
-    viewModel: StepViewModel = viewModel(factory = HealthViewModelFactory(LocalContext.current))
+    viewModel: StepViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     var viewMode by remember { mutableStateOf(ViewMode.DAY) }
@@ -57,6 +59,8 @@ fun StepScreen(
     
     val totalStepCount by viewModel.totalStepCount.collectAsState()
     val stepDataList by viewModel.totalStepCountData.collectAsState()
+    val weeklyStepDataList by viewModel.weeklyStepData.collectAsState()
+    val monthlyStepDataList by viewModel.monthlyStepData.collectAsState()
     val exceptionResponse by viewModel.exceptionResponse.collectAsState()
 
     // Helper function to get Sunday of the week
@@ -65,27 +69,47 @@ fun StepScreen(
         return date.minusDays(dayOfWeek.toLong())
     }
 
-    // For demo: Generate weekly data starting from Sunday
-    val weeklyData = remember(currentDate) {
+    // Map domain StepData to UI format for Weekly Chart
+    val weeklyData = remember(weeklyStepDataList, currentDate) {
         val weekStart = getSundayOfWeek(currentDate)
-        val today = LocalDate.now()
         
-        (0..6).map { offset ->
-            val date = weekStart.plusDays(offset.toLong())
-            // Only generate data for past and today, 0 for future
-            val steps = if (date.isAfter(today)) 0L else (1000..10000).random().toLong()
-            date to steps
+        // Initialize map with 0 steps for all days in week
+        val weekMap = (0..6).associate { offset ->
+            weekStart.plusDays(offset.toLong()) to 0L
+        }.toMutableMap()
+
+        // Fill with actual data
+        weeklyStepDataList.forEach { stepData ->
+            val date = LocalDateTime.ofInstant(stepData.startTime, java.time.ZoneId.systemDefault()).toLocalDate()
+            if (weekMap.containsKey(date)) {
+                weekMap[date] = stepData.count
+            }
         }
+        
+        // Convert to list of pairs sorted by date
+        weekMap.toList().sortedBy { it.first }
     }
     
     val weekStartDate = remember(currentDate) { getSundayOfWeek(currentDate) }
     val weekEndDate = remember(currentDate) { getSundayOfWeek(currentDate).plusDays(6) }
 
-    val monthlyData = remember(currentDate) {
+    val monthlyData = remember(monthlyStepDataList, currentDate) {
         val yearMonth = YearMonth.from(currentDate)
-        (1..yearMonth.lengthOfMonth()).associate { day ->
-            yearMonth.atDay(day) to if (day <= LocalDate.now().dayOfMonth) (500..12000).random().toLong() else 0L
+        val daysInMonth = yearMonth.lengthOfMonth()
+        
+        // Initialize map with 0 steps for all days in month
+        val monthMap = (1..daysInMonth).associate { day ->
+            yearMonth.atDay(day) to 0L
+        }.toMutableMap()
+
+        // Fill with actual data
+        monthlyStepDataList.forEach { stepData ->
+            val date = LocalDateTime.ofInstant(stepData.startTime, java.time.ZoneId.systemDefault()).toLocalDate()
+            if (monthMap.containsKey(date)) {
+                monthMap[date] = stepData.count
+            }
         }
+        monthMap
     }
 
     // Pager for swipe navigation
@@ -115,6 +139,14 @@ fun StepScreen(
         
         if (viewMode == ViewMode.DAY) {
             viewModel.readStepData(currentDate.atStartOfDay())
+        } else if (viewMode == ViewMode.WEEK) {
+            val start = getSundayOfWeek(currentDate)
+            val end = start.plusDays(6)
+            viewModel.readWeeklySteps(start, end)
+        } else if (viewMode == ViewMode.MONTH) {
+            val start = YearMonth.from(currentDate).atDay(1)
+            val end = YearMonth.from(currentDate).atEndOfMonth()
+            viewModel.readMonthlySteps(start, end)
         }
     }
 
@@ -246,7 +278,7 @@ fun StepScreen(
 @Composable
 private fun DayView(
     totalStepCount: String,
-    stepDataList: List<com.samsung.android.sdk.health.data.data.AggregatedData<Long>>
+    stepDataList: List<com.samsung.android.health.sdk.sample.healthdiary.domain.model.StepData>
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -343,7 +375,7 @@ private fun DayView(
                     )
 
                     Text(
-                        text = "${stepData.value} steps",
+                        text = "${stepData.count} steps",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = CyanGlow

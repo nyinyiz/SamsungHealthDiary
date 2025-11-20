@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2024 Samsung Electronics Co., Ltd. All rights reserved
- */
 package com.samsung.android.health.sdk.sample.healthdiary.viewmodel
 
 import android.app.Activity
@@ -8,11 +5,13 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.samsung.android.health.sdk.sample.healthdiary.domain.usecase.CheckPermissionUseCase
+import com.samsung.android.health.sdk.sample.healthdiary.domain.usecase.RequestPermissionUseCase
 import com.samsung.android.health.sdk.sample.healthdiary.utils.AppConstants
-import com.samsung.android.sdk.health.data.HealthDataStore
 import com.samsung.android.sdk.health.data.permission.AccessType
 import com.samsung.android.sdk.health.data.permission.Permission
 import com.samsung.android.sdk.health.data.request.DataTypes
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,9 +19,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class HealthMainViewModel(private val healthDataStore: HealthDataStore) :
-    ViewModel() {
+@HiltViewModel
+class HealthMainViewModel @Inject constructor(
+    private val checkPermissionUseCase: CheckPermissionUseCase,
+    private val requestPermissionUseCase: RequestPermissionUseCase
+) : ViewModel() {
 
     private val _permissionResponse = MutableStateFlow(Pair(AppConstants.WAITING, -1))
     val permissionResponse: StateFlow<Pair<String, Int>> = _permissionResponse.asStateFlow()
@@ -42,9 +45,9 @@ class HealthMainViewModel(private val healthDataStore: HealthDataStore) :
         activityId: Int,
     ) {
         viewModelScope.launch(Dispatchers.IO + exceptionHandler) {
-            val grantedPermissions = healthDataStore.getGrantedPermissions(permSet)
+            val hasPermission = checkPermissionUseCase(permSet)
 
-            if (grantedPermissions.containsAll(permSet)) {
+            if (hasPermission) {
                 _permissionResponse.emit(Pair(AppConstants.SUCCESS, activityId))
             } else {
                 requestForPermission(context, permSet, activityId)
@@ -59,10 +62,10 @@ class HealthMainViewModel(private val healthDataStore: HealthDataStore) :
     ) {
         viewModelScope.launch(Dispatchers.IO + exceptionHandler) {
             val activity = context as Activity
-            val result = healthDataStore.requestPermissions(permSet, activity)
-            Log.i(TAG, "requestPermissions: Success ${result.size}")
+            val success = requestPermissionUseCase(permSet, activity)
+            Log.i(TAG, "requestPermissions: Success $success")
 
-            if (result.containsAll(permSet)) {
+            if (success) {
                 _permissionResponse.emit(Pair(AppConstants.SUCCESS, activityId))
             } else {
                 withContext(Dispatchers.Main) {
@@ -85,7 +88,7 @@ class HealthMainViewModel(private val healthDataStore: HealthDataStore) :
             Permission.of(DataTypes.NUTRITION, AccessType.WRITE)
         )
         viewModelScope.launch(Dispatchers.IO + exceptionHandler) {
-            healthDataStore.requestPermissions(permSet, context as Activity)
+            requestPermissionUseCase(permSet, context as Activity)
         }
     }
 

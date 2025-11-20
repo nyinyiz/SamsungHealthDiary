@@ -18,4 +18,9 @@ interface StepRepository {
      * Get total step count for a specific date
      */
     suspend fun getTotalSteps(date: LocalDate): Result<Long>
+
+    /**
+     * Get daily step data for a range of dates
+     */
+    suspend fun getDailyStepsInRange(startDate: LocalDate, endDate: LocalDate): Result<List<StepData>>
 }

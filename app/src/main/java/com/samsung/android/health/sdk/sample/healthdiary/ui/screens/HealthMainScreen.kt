@@ -30,11 +30,13 @@ import com.samsung.android.sdk.health.data.permission.AccessType
 import com.samsung.android.sdk.health.data.permission.Permission
 import com.samsung.android.sdk.health.data.request.DataTypes
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HealthMainScreen(
     navController: NavController,
-    viewModel: HealthMainViewModel = viewModel(factory = HealthViewModelFactory(LocalContext.current))
+    viewModel: HealthMainViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val permissionResponse by viewModel.permissionResponse.collectAsState()

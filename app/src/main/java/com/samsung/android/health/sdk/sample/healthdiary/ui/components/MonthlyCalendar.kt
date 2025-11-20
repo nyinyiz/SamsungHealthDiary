@@ -90,22 +90,29 @@ fun MonthlyCalendar(
                 val date = selectedMonth.atDay(day)
                 val steps = monthlyData[date] ?: 0L
                 val isToday = date == LocalDate.now()
-                val intensity = if (maxSteps > 0) steps.toFloat() / maxSteps.toFloat() else 0f
+                
+                // Color Logic
+                val backgroundColor = when {
+                    steps == 0L -> androidx.compose.ui.graphics.Color.Transparent
+                    steps < 5000 -> androidx.compose.ui.graphics.Color(0xFFEF5350).copy(alpha = 0.3f) // Red for < 5k
+                    steps < 10000 -> androidx.compose.ui.graphics.Color(0xFFFFCA28).copy(alpha = 0.3f) // Amber for 5k-10k
+                    steps < 15000 -> androidx.compose.ui.graphics.Color(0xFF66BB6A).copy(alpha = 0.3f) // Green for 10k-15k
+                    else -> androidx.compose.ui.graphics.Color(0xFF42A5F5).copy(alpha = 0.3f) // Blue for > 15k
+                }
+                
+                val borderColor = when {
+                    isToday -> ElectricBlue
+                    else -> androidx.compose.ui.graphics.Color.Transparent
+                }
 
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
                         .clip(CircleShape)
-                        .background(
-                            when {
-                                isToday -> ElectricBlue.copy(alpha = 0.3f)
-                                steps > 0 -> CyanGlow.copy(alpha = 0.2f * intensity)
-                                else -> androidx.compose.ui.graphics.Color.Transparent
-                            }
-                        )
+                        .background(backgroundColor)
                         .border(
                             width = if (isToday) 1.dp else 0.dp,
-                            color = if (isToday) ElectricBlue else androidx.compose.ui.graphics.Color.Transparent,
+                            color = borderColor,
                             shape = CircleShape
                         )
                         .clickable { onDayClick(date) }
@@ -120,23 +127,42 @@ fun MonthlyCalendar(
                             text = day.toString(),
                             fontSize = 14.sp,
                             fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-                            color = when {
-                                isToday -> ElectricBlue
-                                steps > 0 -> TextPrimary
-                                else -> TextDisabled
-                            }
+                            color = if (steps > 0 || isToday) TextPrimary else TextDisabled
                         )
-                        if (steps > 0) {
-                            Text(
-                                text = if (steps >= 1000) "${steps / 1000}k" else steps.toString(),
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = CyanGlow
-                            )
-                        }
                     }
                 }
             }
         }
+        
+        // Legend
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            LegendItem(color = androidx.compose.ui.graphics.Color(0xFFEF5350), label = "< 5k")
+            LegendItem(color = androidx.compose.ui.graphics.Color(0xFFFFCA28), label = "5k-10k")
+            LegendItem(color = androidx.compose.ui.graphics.Color(0xFF66BB6A), label = "10k-15k")
+            LegendItem(color = androidx.compose.ui.graphics.Color(0xFF42A5F5), label = "> 15k")
+        }
+    }
+}
+
+@Composable
+private fun LegendItem(color: androidx.compose.ui.graphics.Color, label: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(color)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = label,
+            fontSize = 10.sp,
+            color = TextSecondary
+        )
     }
 }

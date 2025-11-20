@@ -12,11 +12,11 @@ import com.samsung.android.sdk.health.data.HealthDataService
 class HealthViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T = when (modelClass) {
-        HealthMainViewModel::class.java ->
-            HealthMainViewModel(HealthDataService.getStore(context))
-
-        StepViewModel::class.java ->
-            StepViewModel(HealthDataService.getStore(context))
+//        HealthMainViewModel::class.java ->
+//            HealthMainViewModel(HealthDataService.getStore(context))
+//
+//        StepViewModel::class.java ->
+//            StepViewModel(HealthDataService.getStore(context))
 
         NutritionViewModel::class.java ->
             NutritionViewModel(HealthDataService.getStore(context))
