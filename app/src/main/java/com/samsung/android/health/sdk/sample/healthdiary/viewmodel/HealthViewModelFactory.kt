@@ -21,8 +21,8 @@ class HealthViewModelFactory(private val context: Context) : ViewModelProvider.F
         NutritionViewModel::class.java ->
             NutritionViewModel(HealthDataService.getStore(context))
 
-        HeartRateViewModel::class.java ->
-            HeartRateViewModel(HealthDataService.getStore(context))
+//        HeartRateViewModel::class.java ->
+//            HeartRateViewModel(HealthDataService.getStore(context))
 
         SleepViewModel::class.java ->
             SleepViewModel(HealthDataService.getStore(context))

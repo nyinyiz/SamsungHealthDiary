@@ -1,32 +1,57 @@
 package com.samsung.android.health.sdk.sample.healthdiary.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.samsung.android.health.sdk.sample.healthdiary.ui.components.HealthDetailScaffold
-import com.samsung.android.health.sdk.sample.healthdiary.utils.AppConstants
-import com.samsung.android.health.sdk.sample.healthdiary.utils.formatString
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.samsung.android.health.sdk.sample.healthdiary.ui.components.GlassBox
+import com.samsung.android.health.sdk.sample.healthdiary.ui.components.GlassCard
+import com.samsung.android.health.sdk.sample.healthdiary.ui.theme.*
 import com.samsung.android.health.sdk.sample.healthdiary.utils.resolveException
 import com.samsung.android.health.sdk.sample.healthdiary.utils.showToast
-import com.samsung.android.health.sdk.sample.healthdiary.viewmodel.HealthViewModelFactory
 import com.samsung.android.health.sdk.sample.healthdiary.viewmodel.HeartRateViewModel
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HeartRateScreen(
     onNavigateBack: () -> Unit,
-    viewModel: HeartRateViewModel = viewModel(factory = HealthViewModelFactory(LocalContext.current))
+    viewModel: HeartRateViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    var currentDate by remember { mutableStateOf(AppConstants.currentDate) }
-    val dayStartTimeAsText by viewModel.dayStartTimeAsText.collectAsState()
+    var currentDate by remember { mutableStateOf(LocalDate.now()) }
     val heartRateList by viewModel.dailyHeartRate.collectAsState()
     val exceptionResponse by viewModel.exceptionResponse.collectAsState()
+
+    // Pager state for swipe navigation
+    val pagerState = rememberPagerState(
+        initialPage = 500,
+        pageCount = { 1000 }
+    )
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(exceptionResponse) {
         exceptionResponse?.let { exception ->
@@ -35,8 +60,11 @@ fun HeartRateScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.readHeartRateData(currentDate)
+    // Sync pager with date and fetch data
+    LaunchedEffect(pagerState.currentPage) {
+        val offset = pagerState.currentPage - 500
+        currentDate = LocalDate.now().plusDays(offset.toLong())
+        viewModel.readHeartRateData(currentDate.atStartOfDay())
     }
 
     DisposableEffect(Unit) {
@@ -45,73 +73,259 @@ fun HeartRateScreen(
         }
     }
 
-    HealthDetailScaffold(
-        title = "Heart Rate",
-        dateText = dayStartTimeAsText,
-        currentDate = currentDate,
-        onNavigateBack = onNavigateBack,
-        onDateSelected = { date ->
-            currentDate = date
-            viewModel.readHeartRateData(date)
-        },
-        onPreviousDate = {
-            if (currentDate > AppConstants.minimumDate) {
-                currentDate = currentDate.minusDays(1)
-                viewModel.readHeartRateData(currentDate)
-            }
-        },
-        onNextDate = {
-            if (currentDate < AppConstants.currentDate) {
-                currentDate = currentDate.plusDays(1)
-                viewModel.readHeartRateData(currentDate)
-            }
-        }
-    ) { padding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(DeepBlack, CosmicNavy)
+                )
+            )
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
+                .padding(24.dp)
         ) {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                items(heartRateList) { heartRate ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
+                IconButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(GlassWhite10)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = TextPrimary
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Heart Rate",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                
+                // Today Button
+                if (!currentDate.isEqual(LocalDate.now())) {
+                    TextButton(
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(500)
+                            }
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = CyanGlow)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                "${heartRate.startTime} - ${heartRate.endTime}",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                        Text(
+                            text = "Today",
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+
+            // Date Navigation
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { 
+                        scope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Previous Day",
+                        tint = TextSecondary
+                    )
+                }
+
+                Text(
+                    text = currentDate.format(DateTimeFormatter.ofPattern("EEE, MMM d")),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary
+                )
+
+                IconButton(
+                    onClick = { 
+                        if (currentDate.isBefore(LocalDate.now())) {
+                            scope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
+                        }
+                    },
+                    enabled = currentDate.isBefore(LocalDate.now())
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Next Day",
+                        tint = if (currentDate.isBefore(LocalDate.now())) TextSecondary else TextDisabled
+                    )
+                }
+            }
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Summary Card (Latest or Average)
+                    item {
+                        val latestAvg = heartRateList.lastOrNull()?.avg ?: 0f
+                        GlassBox(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize()
                             ) {
-                                HeartRateMetric("Min", formatString(heartRate.min))
-                                HeartRateMetric("Avg", formatString(heartRate.avg))
-                                HeartRateMetric("Max", formatString(heartRate.max))
+                                // Background Glow
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .size(120.dp)
+                                        .blur(40.dp)
+                                        .background(
+                                            brush = Brush.radialGradient(
+                                                colors = listOf(
+                                                    androidx.compose.ui.graphics.Color(0xFFFF4081).copy(alpha = 0.3f),
+                                                    androidx.compose.ui.graphics.Color.Transparent
+                                                )
+                                            )
+                                        )
+                                )
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(24.dp),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Favorite,
+                                        contentDescription = null,
+                                        tint = androidx.compose.ui.graphics.Color(0xFFFF4081),
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Latest Average",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextSecondary
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Row(verticalAlignment = Alignment.Bottom) {
+                                        Text(
+                                            text = latestAvg.toInt().toString(),
+                                            fontSize = 48.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextPrimary
+                                        )
+                                        Text(
+                                            text = " bpm",
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = TextSecondary,
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
-                }
 
-                if (heartRateList.isEmpty()) {
                     item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth()
+                        Text(
+                            text = "Daily Breakdown",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = TextPrimary,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+
+                    items(heartRateList) { heartRate ->
+                        GlassBox(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp)
                         ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "${heartRate.startTime} - ${heartRate.endTime}",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextSecondary
+                                    )
+                                    
+                                    Container(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(GlassWhite10)
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "${heartRate.count} readings",
+                                            fontSize = 12.sp,
+                                            color = TextDisabled
+                                        )
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    HeartRateStatItem("Min", heartRate.min.toInt().toString(), androidx.compose.ui.graphics.Color(0xFF64B5F6))
+                                    HeartRateStatItem("Avg", heartRate.avg.toInt().toString(), androidx.compose.ui.graphics.Color(0xFF81C784))
+                                    HeartRateStatItem("Max", heartRate.max.toInt().toString(), androidx.compose.ui.graphics.Color(0xFFE57373))
+                                }
+                            }
+                        }
+                    }
+
+                    if (heartRateList.isEmpty()) {
+                        item {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(32.dp)
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    "No heart rate data for this day",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    text = "No heart rate data for this day",
+                                    fontSize = 16.sp,
+                                    color = TextDisabled
                                 )
                             }
                         }
@@ -123,22 +337,39 @@ fun HeartRateScreen(
 }
 
 @Composable
-fun HeartRateMetric(label: String, value: String) {
-    Column {
+private fun HeartRateStatItem(
+    label: String,
+    value: String,
+    color: androidx.compose.ui.graphics.Color
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            text = label,
+            fontSize = 12.sp,
+            color = TextSecondary
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = color
         )
         Text(
-            value,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary
+            text = "bpm",
+            fontSize = 10.sp,
+            color = TextDisabled
         )
-        Text(
-            "bpm",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+    }
+}
+
+// Helper Container for "readings" badge
+@Composable
+private fun Container(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Box(modifier = modifier) {
+        content()
     }
 }
