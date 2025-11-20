@@ -80,15 +80,29 @@ class HeartRateViewModel @Inject constructor(
 
     private fun processHeartRateData(heartRateData: HeartRateData, hrQuarter: HeartRateUiModel) {
         hrQuarter.apply {
+            // Use the main heartRate value for calculations
             if (heartRateData.heartRate > 0) {
-                avg += heartRateData.heartRate
+                val hr = heartRateData.heartRate
+                avg += hr
                 count++
+                
+                // Calculate min: first reading or lower than current min
+                if (min == 1000f) {
+                    min = hr
+                } else {
+                    min = minOf(min, hr)
+                }
+                
+                // Calculate max: higher than current max
+                max = maxOf(max, hr)
             }
-            if (heartRateData.maxHeartRate > 0) {
-                max = maxOf(max, heartRateData.maxHeartRate)
+            
+            // Fallback: Use SDK's min/max if they exist and are valid
+            if (heartRateData.maxHeartRate > 0 && heartRateData.maxHeartRate > max) {
+                max = heartRateData.maxHeartRate
             }
-            if (heartRateData.minHeartRate > 0) {
-                if (min == 1000f) min = heartRateData.minHeartRate else min = minOf(min, heartRateData.minHeartRate)
+            if (heartRateData.minHeartRate > 0 && (min == 1000f || heartRateData.minHeartRate < min)) {
+                min = heartRateData.minHeartRate
             }
         }
     }
