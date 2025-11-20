@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2024 Samsung Electronics Co., Ltd. All rights reserved -->
+<resources>
+    <!-- Base application theme for Jetpack Compose (Dark Mode) -->
+    <style name="Theme.MyApplication" parent="android:Theme.Material.NoActionBar">
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
