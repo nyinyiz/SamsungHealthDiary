@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.samsung.android.health.sdk.sample.healthdiary.ui.theme.LocalGradientColors
 import com.samsung.android.health.sdk.sample.healthdiary.ui.theme.GlassBorder
 import com.samsung.android.health.sdk.sample.healthdiary.ui.theme.GlassWhite10
 import com.samsung.android.health.sdk.sample.healthdiary.ui.theme.GlassWhite20
@@ -22,23 +23,15 @@ fun GlassBox(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(24.dp),
     borderWidth: Dp = 1.dp,
-    borderColor: Color = GlassBorder,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier
             .clip(shape)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        GlassWhite20,
-                        GlassWhite10
-                    )
-                )
-            )
+            .background(LocalGradientColors.current.glassBackground)
             .border(
-                width = borderWidth,
-                color = borderColor,
+                width = 1.dp,
+                color = LocalGradientColors.current.glassBorder,
                 shape = shape
             ),
         content = content

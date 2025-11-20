@@ -2,13 +2,16 @@ package com.samsung.android.health.sdk.sample.healthdiary.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -73,10 +76,7 @@ fun HealthMainScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(
-                        DeepBlack,
-                        CosmicNavy
-                    )
+                    colors = LocalGradientColors.current.backgroundGradient
                 )
             )
     ) {
@@ -87,22 +87,43 @@ fun HealthMainScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Header
-            Column(
-                modifier = Modifier.padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Health Diary",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
-                )
-                Text(
-                    text = "Track your wellness journey",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = TextSecondary
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Health Diary",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = LocalGradientColors.current.textPrimary
+                    )
+                    Text(
+                        text = "Track your wellness journey",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = LocalGradientColors.current.textSecondary
+                    )
+                }
+
+                IconButton(
+                    onClick = { navController.navigate(Screen.Settings.route) },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(LocalGradientColors.current.glassBackground)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = LocalGradientColors.current.textPrimary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -156,7 +177,7 @@ fun HealthMainScreen(
                 text = "SDK Version: ${SdkVersion.getVersionName()}",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
-                color = TextDisabled,
+                color = LocalGradientColors.current.textDisabled,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }

@@ -10,6 +10,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.samsung.android.health.sdk.sample.healthdiary.navigation.HealthDiaryNavigation
@@ -24,7 +26,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            HealthDiaryTheme {
+            val settingsViewModel: com.samsung.android.health.sdk.sample.healthdiary.viewmodel.SettingsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            val isDarkMode by settingsViewModel.isDarkMode.collectAsState()
+
+            HealthDiaryTheme(darkTheme = isDarkMode) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

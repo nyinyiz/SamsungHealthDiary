@@ -14,6 +14,7 @@ import com.samsung.android.health.sdk.sample.healthdiary.ui.screens.NutritionScr
 import com.samsung.android.health.sdk.sample.healthdiary.ui.screens.SleepScreen
 import com.samsung.android.health.sdk.sample.healthdiary.ui.screens.StepScreen
 import com.samsung.android.health.sdk.sample.healthdiary.ui.screens.UpdateFoodScreen
+import com.samsung.android.health.sdk.sample.healthdiary.ui.screens.SettingsScreen
 
 sealed class Screen(val route: String) {
     data object Main : Screen("main")
@@ -21,6 +22,7 @@ sealed class Screen(val route: String) {
     data object HeartRate : Screen("heart_rate")
     data object Sleep : Screen("sleep")
     data object Nutrition : Screen("nutrition")
+    data object Settings : Screen("settings")
     data object ChooseFood : Screen("choose_food/{mealType}/{insertDate}") {
         fun createRoute(mealType: Int, insertDate: String) = "choose_food/$mealType/$insertDate"
     }
@@ -101,6 +103,10 @@ fun HealthDiaryNavigation(
                 insertDate = insertDate,
                 onNavigateBack = { navController.popBackStack() }
             )
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

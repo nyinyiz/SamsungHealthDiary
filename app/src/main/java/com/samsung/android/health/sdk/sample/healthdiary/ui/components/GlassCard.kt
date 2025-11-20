@@ -33,21 +33,25 @@ fun GlassCard(
             .fillMaxWidth()
             .height(120.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        GlassWhite20,
-                        GlassWhite10
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                color = GlassBorder,
-                shape = RoundedCornerShape(24.dp)
-            )
             .clickable(onClick = onClick)
     ) {
+        // Background
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(LocalGradientColors.current.glassBackground)
+        )
+
+        // Border
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .border(
+                    width = 1.dp,
+                    color = LocalGradientColors.current.glassBorder,
+                    shape = RoundedCornerShape(24.dp)
+                )
+        )
         // Glow effect layer
         Box(
             modifier = Modifier
@@ -87,9 +91,9 @@ fun GlassCard(
             // Title
             Text(
                 text = title,
-                fontSize = 24.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = TextPrimary
+                color = LocalGradientColors.current.textPrimary
             )
         }
     }

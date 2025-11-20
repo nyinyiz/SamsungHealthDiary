@@ -155,16 +155,12 @@ fun StepScreen(
             viewModel.setDefaultValueToExceptionResponse()
         }
     }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(
-                        DeepBlack,
-                        CosmicNavy
-                    )
+                    colors = LocalGradientColors.current.backgroundGradient
                 )
             )
     ) {
@@ -186,7 +182,7 @@ fun StepScreen(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(GlassWhite10)
+                        .background(LocalGradientColors.current.glassBackground)
                         .border(1.dp, GlassBorder, CircleShape)
                 ) {
                     Icon(
@@ -201,7 +197,7 @@ fun StepScreen(
                         text = "Steps",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = TextPrimary
+                        color = LocalGradientColors.current.textPrimary
                     )
                     Text(
                         text = when (viewMode) {
@@ -211,7 +207,7 @@ fun StepScreen(
                         },
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal,
-                        color = TextSecondary
+                        color = LocalGradientColors.current.textSecondary
                     )
                 }
             }
@@ -322,7 +318,7 @@ private fun DayView(
                         text = "Total Steps",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = TextSecondary
+                        color = LocalGradientColors.current.textSecondary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -371,7 +367,7 @@ private fun DayView(
                         text = time.format(timeFormatter),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = TextPrimary
+                        color = LocalGradientColors.current.textPrimary
                     )
 
                     Text(
