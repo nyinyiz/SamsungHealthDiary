@@ -1,148 +1,180 @@
-# Health Diary
+# 💎 Health Diary - Liquid Glass Edition
 
-A modern Android health tracking application built with Jetpack Compose and Samsung Health SDK.
+> **Gemini 3 Pro Experimental Project** - A modernized redesign of Samsung's Health Diary sample app with stunning Liquid Glass UI aesthetics.
+> 
+> **Original Project**: [Samsung Health Diary Sample](https://developer.samsung.com/health/data/sample/health-diary.html)
 
-## Features
+<div align="center">
 
-- **Step Tracking**: View daily and hourly step counts
-- **Heart Rate Monitoring**: Track heart rate throughout the day
-- **Sleep Analysis**: Monitor sleep sessions with blood oxygen and skin temperature data
-- **Nutrition Tracking**: Log meals and track calorie intake
-- **Samsung Health Integration**: Seamless integration with Samsung Health data
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
+![Samsung Health](https://img.shields.io/badge/Samsung_Health-1428A0?style=for-the-badge&logo=samsung&logoColor=white)
 
-## Tech Stack
+</div>
 
-### Architecture
-- **Single Activity Architecture** with Jetpack Compose Navigation
-- **MVVM Pattern** with StateFlow for reactive state management
-- **Material 3 Design** with dynamic theming support
+---
 
-### Core Technologies
-- **Kotlin** 2.2.20
-- **Jetpack Compose** (BOM 2024.12.01)
-- **Compose Navigation** 2.8.5
-- **StateFlow & Coroutines** for async operations
-- **Samsung Health Data API** 1.0.0
+## ✨ Features
 
-### Key Dependencies
-```gradle
-// Jetpack Compose
-androidx.compose.ui:ui
-androidx.compose.material3:material3
-androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7
-androidx.navigation:navigation-compose:2.8.5
+| Feature | Description | Status |
+|---------|-------------|--------|
+| 🚶 **Steps** | Daily/weekly/monthly tracking with swipe navigation | ✅ Complete |
+| ❤️ **Heart Rate** | Real-time monitoring with breakdowns | ✅ Complete |
+| 😴 **Sleep** | Session tracking with quality metrics | 🚧 In Progress |
+| 🍎 **Nutrition** | Meal logging and calorie tracking | ✅ Complete |
+| 🌓 **Dark/Light Mode** | Dynamic theme with DataStore persistence | ✅ Complete |
 
-// Samsung Health SDK
-samsung-health-data-api-1.0.0.aar
+---
+
+## 🎨 Design System
+
+**Liquid Glass + Neo-Neon Aesthetic**
+
+```mermaid
+graph LR
+    A[Deep Black<br/>#0A0E27] --> B[Gradient Background]
+    C[Cosmic Navy<br/>#1A1F3A] --> B
+    B --> D[Glass Cards<br/>Semi-transparent<br/>Blur Effects]
+    E[Electric Blue<br/>#00D4FF] --> F[Neon Accents]
+    G[Magenta<br/>#FF006B] --> F
+    F --> D
 ```
 
-## Project Structure
+---
 
-```
-app/src/main/java/.../healthdiary/
-├── activity/
-│   └── MainActivity.kt              # Single Compose entry point
-├── navigation/
-│   └── Navigation.kt                # Compose Navigation setup
-├── ui/
-│   ├── theme/
-│   │   └── Theme.kt                 # Material 3 theme
-│   ├── components/
-│   │   └── CommonComponents.kt     # Reusable composables
-│   └── screens/
-│       ├── HealthMainScreen.kt     # Home screen
-│       ├── StepScreen.kt           # Step tracking
-│       ├── HeartRateScreen.kt      # Heart rate display
-│       ├── SleepScreen.kt          # Sleep analysis
-│       ├── NutritionScreen.kt      # Nutrition tracking
-│       ├── ChooseFoodScreen.kt     # Food selection
-│       └── UpdateFoodScreen.kt     # Food entry management
-├── viewmodel/                       # All ViewModels (StateFlow-based)
-├── entries/                         # Data models
-└── utils/                           # Utilities and constants
+## 🏗️ Architecture
+
+```mermaid
+flowchart TD
+    UI[🎨 UI Layer<br/>Jetpack Compose] --> VM[⚙️ ViewModel<br/>Hilt + StateFlow]
+    VM --> UC[🔄 Use Cases<br/>Domain Logic]
+    UC --> REPO[💾 Repository<br/>Data Layer]
+    REPO --> SDK[📱 Samsung Health SDK]
+    
+    style UI fill:#00D4FF,stroke:#fff,color:#000
+    style VM fill:#7F52FF,stroke:#fff,color:#fff
+    style UC fill:#FF006B,stroke:#fff,color:#fff
+    style REPO fill:#1A1F3A,stroke:#00D4FF,color:#fff
+    style SDK fill:#1428A0,stroke:#fff,color:#fff
 ```
 
-## Setup
+**Clean Architecture Pattern**: UI → ViewModel → UseCase → Repository → SDK
+
+---
+
+## 🚀 Tech Stack
+
+| Category | Technology | Version |
+|----------|-----------|---------|
+| **Language** | Kotlin | 2.0.21 |
+| **UI** | Jetpack Compose | BOM 2024.12.01 |
+| **DI** | Hilt | 2.54 |
+| **Navigation** | Compose Navigation | 2.8.5 |
+| **Async** | Coroutines + StateFlow | 1.7.3 |
+| **Storage** | DataStore Preferences | 1.1.1 |
+| **Health SDK** | Samsung Health Data API | 1.0.0 |
+
+---
+
+## 📦 Project Structure
+
+```
+healthdiary/
+├── 🎨 ui/
+│   ├── screens/          # 6 feature screens
+│   ├── components/       # Reusable UI (GlassCard, GlassBox, etc.)
+│   └── theme/           # Material 3 + Custom colors
+├── 🎯 domain/
+│   ├── model/           # Domain entities
+│   └── usecase/         # Business logic
+├── 💾 data/
+│   └── repository/      # Data sources
+├── ⚙️ viewmodel/         # Hilt ViewModels
+└── 🔧 di/               # Dependency injection modules
+```
+
+---
+
+## ⚡ Quick Start
 
 ### Prerequisites
-- Android Studio Hedgehog or later
+
+- Android Studio Hedgehog+
 - JDK 17
-- Android SDK 29 or higher
-- Samsung Health app installed on device
+- Android device with Samsung Health
 
-### Building the App
+### Build & Run
 
-1. Clone the repository
 ```bash
-git clone <repository-url>
-cd "Health Diary Code"
-```
+# Clone and open in Android Studio
+./gradlew assembleDebug
 
-2. Open the project in Android Studio
-
-3. Sync Gradle files
-
-4. Run the app on a device with Samsung Health installed
-
-### Configuration
-
-The app requires Samsung Health permissions. On first run:
-1. Tap the settings icon in the top bar
-2. Grant all requested permissions
-3. Navigate to desired health category
-
-## Permissions
-
-The app requires the following Samsung Health permissions:
-- **READ_STEPS**: View step count data
-- **READ_HEART_RATE**: Access heart rate measurements
-- **READ_SLEEP**: View sleep session data
-- **READ_BLOOD_OXYGEN**: Access blood oxygen levels
-- **READ_SKIN_TEMPERATURE**: View skin temperature data
-- **READ_NUTRITION**: View nutrition entries
-- **WRITE_NUTRITION**: Add/update/delete nutrition entries
-
-## Features Highlights
-
-### Modern UI
-- 100% Jetpack Compose (zero XML layouts)
-- Material 3 design with light/dark theme support
-- Swipe gestures for date navigation
-- Responsive and accessible UI
-
-### State Management
-- Pure StateFlow for reactive state
-- Lifecycle-aware data collection
-- Proper coroutine scope management
-
-### Navigation
-- Type-safe navigation with arguments
-- Deep linking support ready
-- Back stack management
-
-## Building for Production
-
-1. Update `app/build.gradle` with your signing config
-2. Create release build:
-```bash
+# Or build release
 ./gradlew assembleRelease
 ```
 
-3. Output APK: `app/build/outputs/apk/release/`
+### First Launch
 
-## License
+1. Tap ⚙️ settings icon
+2. Grant Samsung Health permissions
+3. Start tracking! 🎉
 
-Copyright (C) 2024 Samsung Electronics Co., Ltd. All rights reserved
+---
 
-## Development Notes
+## 🔐 Permissions
 
-- Minimum SDK: 29 (Android 10)
-- Target SDK: 36
-- Compile SDK: 36
-- Uses Kotlin compiler extension version: 1.6.0
+| Permission | Purpose |
+|------------|---------|
+| `READ_STEPS` | View step count |
+| `READ_HEART_RATE` | Monitor heart rate |
+| `READ_SLEEP` | Track sleep sessions |
+| `READ_NUTRITION` | View meals |
+| `WRITE_NUTRITION` | Log meals |
 
-## Known Requirements
+---
 
-- Samsung Health app must be installed
-- Device must support Samsung Health SDK
-- Permissions must be granted through Samsung Health consent flow
+## 🎯 Key Improvements Over Original
+
+| Aspect | Original | This Version |
+|--------|----------|--------------|
+| **UI Framework** | XML Views | 100% Jetpack Compose |
+| **Design** | Material 2 | Liquid Glass + Neo-Neon |
+| **Architecture** | Direct SDK calls | Clean Architecture (MVVM + UseCase) |
+| **DI** | Manual Factory | Hilt |
+| **State** | LiveData | StateFlow |
+| **Theme** | Static | Persistent Dark/Light with DataStore |
+| **Navigation** | Fragment-based | Compose Navigation |
+
+---
+
+## 📱 Screens Preview
+
+| Screen | Features |
+|--------|----------|
+| **Home** | Glass cards for each health metric |
+| **Steps** | Day/Week/Month views with HorizontalPager |
+| **Heart Rate** | Daily breakdown by time periods |
+| **Nutrition** | Meal tracking with CRUD operations |
+
+---
+
+## 📄 License
+
+Copyright © 2024 Samsung Electronics Co., Ltd.
+
+---
+
+## 🙏 Attribution
+
+- **Original Sample**: [Samsung Health Diary](https://developer.samsung.com/health/data/sample/health-diary.html)
+- **Redesigned with**: Gemini 3 Pro & Antigravity
+- **Design Inspiration**: Liquid Glass + Neo-Neon aesthetic
+
+---
+
+<div align="center">
+
+**Built with ❤️ using Jetpack Compose**
+
+</div>
