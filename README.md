@@ -1,4 +1,4 @@
-# 💎 Health Diary - Liquid Glass Edition
+# Samsung Health Diary - Redesign Edition
 
 > **Gemini 3 Pro Experimental Project** - A modernized redesign of Samsung's Health Diary sample app with stunning Liquid Glass UI aesthetics.
 > 
