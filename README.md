@@ -15,6 +15,53 @@
 
 ---
 
+## 📱 Screenshots
+
+<div align="center">
+
+<table>
+  <tr>
+    <td width="33%">
+      <img src="doc/ss1.png" alt="Home Screen" width="100%"/>
+      <p align="center"><b>Home Screen</b></p>
+    </td>
+    <td width="33%">
+      <img src="doc/ss2.png" alt="Steps Weekly" width="100%"/>
+      <p align="center"><b>Steps Weekly</b></p>
+    </td>
+    <td width="33%">
+      <img src="doc/ss3.png" alt="Heart Rate" width="100%"/>
+      <p align="center"><b>Heart Rate</b></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <img src="doc/ss4.png" alt="Sleep Tracking" width="100%"/>
+      <p align="center"><b>Sleep Tracking</b></p>
+    </td>
+    <td width="33%">
+      <img src="doc/ss5.png" alt="Water Intake" width="100%"/>
+      <p align="center"><b>Water Intake</b></p>
+    </td>
+    <td width="33%">
+      <img src="doc/ss6.png" alt="Workout Calendar" width="100%"/>
+      <p align="center"><b>Workout Calendar</b></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <img src="doc/ss7.png" alt="Settings" width="100%"/>
+      <p align="center"><b>Settings</b></p>
+    </td>
+    <td width="33%"></td>
+    <td width="33%"></td>
+  </tr>
+</table>
+
+</div>
+
+---
+
 ## ✨ Features
 
 | Feature | Description | Views | Status |
@@ -228,24 +275,6 @@ All permissions are **READ-ONLY** for privacy and safety:
 | **Charts** | Basic lists | Visual charts & calendars |
 | **Animations** | None | Water waves, smooth transitions |
 | **Home Screen** | List layout | 2-column grid with emojis |
-
----
-
-## 🎨 Screenshots
-
-<!-- Add your screenshots here -->
-<!-- Example structure:
-### Home Screen
-![Home Screen](screenshots/home_screen.png)
-
-### Workout History - Weekly Chart
-![Weekly Chart](screenshots/workout_weekly.png)
-
-### Water Intake Animation
-![Water Animation](screenshots/water_intake.gif)
--->
-
-> 📸 **Screenshots coming soon!** Run the app and capture your own to see the beautiful Liquid Glass UI in action.
 
 ---
 
