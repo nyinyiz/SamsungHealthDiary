@@ -1,6 +1,6 @@
-# Samsung Health Diary - Redesign Edition
+# Samsung Health Diary - Enhanced Edition
 
-> **Gemini 3 Pro Experimental Project** - A modernized redesign of Samsung's Health Diary sample app with stunning Liquid Glass UI aesthetics.
+> **Modern Health Tracking App** - A beautifully redesigned Samsung Health integration app featuring stunning Liquid Glass UI aesthetics and comprehensive health metrics visualization.
 > 
 > **Original Project**: [Samsung Health Diary Sample](https://developer.samsung.com/health/data/sample/health-diary.html)
 
@@ -17,13 +17,15 @@
 
 ## ✨ Features
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| 🚶 **Steps** | Daily/weekly/monthly tracking with swipe navigation | ✅ Complete |
-| ❤️ **Heart Rate** | Real-time monitoring with breakdowns | ✅ Complete |
-| 😴 **Sleep** | Session tracking with quality metrics | 🚧 In Progress |
-| 🍎 **Nutrition** | Meal logging and calorie tracking | ✅ Complete |
-| 🌓 **Dark/Light Mode** | Dynamic theme with DataStore persistence | ✅ Complete |
+| Feature | Description | Views | Status |
+|---------|-------------|-------|--------|
+| 👟 **Steps** | Daily/weekly/monthly tracking with visual charts | Day/Week/Month + Swipe Navigation | ✅ Complete |
+| ❤️ **Heart Rate** | Real-time monitoring with detailed breakdowns | Daily View | ✅ Complete |
+| 😴 **Sleep** | Session tracking with quality metrics (O₂, temp) | Daily Sessions | ✅ Complete |
+| 💧 **Water Intake** | Hydration tracking with animated water visualization | Daily with Wave Animation | ✅ Complete |
+| 🏋️ **Workout History** | Exercise tracking with charts and calendar | Day/Week/Month + Charts | ✅ Complete |
+| 🍎 **Nutrition** | Meal logging and calorie tracking | CRUD Operations | ✅ Complete |
+| 🌓 **Dark/Light Mode** | Dynamic theme with DataStore persistence | App-wide | ✅ Complete |
 
 ---
 
@@ -31,15 +33,47 @@
 
 **Liquid Glass + Neo-Neon Aesthetic**
 
-```mermaid
-graph LR
-    A[Deep Black<br/>#0A0E27] --> B[Gradient Background]
-    C[Cosmic Navy<br/>#1A1F3A] --> B
-    B --> D[Glass Cards<br/>Semi-transparent<br/>Blur Effects]
-    E[Electric Blue<br/>#00D4FF] --> F[Neon Accents]
-    G[Magenta<br/>#FF006B] --> F
-    F --> D
-```
+### Color Palette
+- **Background**: Deep Black (#0A0E27) → Cosmic Navy (#1A1F3A) gradient
+- **Glass Cards**: Semi-transparent with blur effects and subtle glows
+- **Accents**: 
+  - 🔵 Electric Blue (#00D4FF) - Steps
+  - 💗 Hot Pink (#FF006B) - Heart Rate  
+  - 💜 Neon Purple (#9B4DFF) - Sleep
+  - 💙 Cyan (#4FC3F7) - Water
+  - ❤️ Red/Orange (#FF6B6B) - Workouts
+
+### UI Components
+- **Glass Cards**: Frosted glass effect with radial glows
+- **Emoji Icons**: Large, colorful emoji representations
+- **Charts**: Bar charts (weekly) and calendar grids (monthly)
+- **Animations**: Water wave effect, smooth transitions
+
+---
+
+## 🏋️ Feature Highlights
+
+### Water Intake 💧
+- **Animated Visualization**: Realistic water wave effect using Canvas
+- **Sinusoidal Animation**: Continuous wave motion at top of liquid
+- **Daily Goal Tracking**: Visual fill level based on intake vs. goal
+- **Glass Container**: Beautiful container with gradient water colors
+
+### Workout History 🏋️
+- **40+ Exercise Types**: Running, Cycling, Swimming, Yoga, and more
+- **Weekly Bar Chart**: Visual representation of workout frequency
+- **Monthly Calendar**: Color-coded workout intensity indicators
+  - Light Orange: 1 workout
+  - Orange: 2 workouts
+  - Red: 3+ workouts
+- **Swipe Navigation**: Easily navigate between days/weeks/months
+- **Emoji Icons**: 🏃 🚴 🏊 🧘 for each exercise type
+
+### Modern Home Screen
+- **2-Column Grid Layout**: Optimized space utilization
+- **Large Emoji Cards**: 48sp emojis for each health category
+- **Interactive Cards**: Radial glow effects matching category colors
+- **Quick Access**: One-tap navigation to any health metric
 
 ---
 
@@ -48,18 +82,16 @@ graph LR
 ```mermaid
 flowchart TD
     UI[🎨 UI Layer<br/>Jetpack Compose] --> VM[⚙️ ViewModel<br/>Hilt + StateFlow]
-    VM --> UC[🔄 Use Cases<br/>Domain Logic]
-    UC --> REPO[💾 Repository<br/>Data Layer]
+    VM --> REPO[💾 Repository<br/>Data Layer]
     REPO --> SDK[📱 Samsung Health SDK]
     
     style UI fill:#00D4FF,stroke:#fff,color:#000
     style VM fill:#7F52FF,stroke:#fff,color:#fff
-    style UC fill:#FF006B,stroke:#fff,color:#fff
     style REPO fill:#1A1F3A,stroke:#00D4FF,color:#fff
     style SDK fill:#1428A0,stroke:#fff,color:#fff
 ```
 
-**Clean Architecture Pattern**: UI → ViewModel → UseCase → Repository → SDK
+**Clean Architecture Pattern**: UI → ViewModel → Repository → Samsung Health SDK
 
 ---
 
@@ -74,6 +106,7 @@ flowchart TD
 | **Async** | Coroutines + StateFlow | 1.7.3 |
 | **Storage** | DataStore Preferences | 1.1.1 |
 | **Health SDK** | Samsung Health Data API | 1.0.0 |
+| **Build** | Gradle 8.9 + AGP 8.8.0 | - |
 
 ---
 
@@ -82,15 +115,23 @@ flowchart TD
 ```
 healthdiary/
 ├── 🎨 ui/
-│   ├── screens/          # 6 feature screens
-│   ├── components/       # Reusable UI (GlassCard, GlassBox, etc.)
+│   ├── screens/          # 7 feature screens
+│   │   ├── HealthMainScreen.kt    # 2-column grid with emoji cards
+│   │   ├── StepScreen.kt          # Day/Week/Month views
+│   │   ├── HeartRateScreen.kt     # Heart rate monitoring
+│   │   ├── SleepScreen.kt         # Sleep sessions
+│   │   ├── WaterIntakeScreen.kt   # Animated water visualization
+│   │   ├── ExerciseScreen.kt      # Workout charts & calendar
+│   │   └── NutritionScreen.kt     # Meal tracking
+│   ├── components/       # Reusable UI
+│   │   ├── GlassCard.kt          # Glass effect cards
+│   │   ├── ViewModeToggle.kt     # Day/Week/Month toggle
+│   │   ├── WeeklyStepChart.kt    # Bar chart component
+│   │   └── MonthlyCalendar.kt    # Calendar grid
 │   └── theme/           # Material 3 + Custom colors
-├── 🎯 domain/
-│   ├── model/           # Domain entities
-│   └── usecase/         # Business logic
 ├── 💾 data/
-│   └── repository/      # Data sources
-├── ⚙️ viewmodel/         # Hilt ViewModels
+│   └── repository/      # Samsung Health data access
+├── ⚙️ viewmodel/         # Hilt ViewModels (7 total)
 └── 🔧 di/               # Dependency injection modules
 ```
 
@@ -100,37 +141,76 @@ healthdiary/
 
 ### Prerequisites
 
-- Android Studio Hedgehog+
-- JDK 17
-- Android device with Samsung Health
+- **Android Studio**: Hedgehog (2023.1.1) or newer
+- **JDK**: 17 or higher
+- **Device**: Android 10+ with Samsung Health installed
+- **Samsung Health**: Version 6.30.2 or later
 
 ### Build & Run
 
 ```bash
-# Clone and open in Android Studio
+# Clone the repository
+git clone [repository-url]
+cd health-diary
+
+# Build debug APK
 ./gradlew assembleDebug
 
-# Or build release
-./gradlew assembleRelease
+# Or install directly to connected device
+./gradlew installDebug
 ```
 
 ### First Launch
 
-1. Tap ⚙️ settings icon
-2. Grant Samsung Health permissions
-3. Start tracking! 🎉
+1. **Launch App** → Tap any health category card
+2. **Grant Permissions** → Samsung Health will prompt for READ permissions
+3. **Enable Developer Mode** in Samsung Health (tap version 10 times in About)
+4. **Start Tracking!** 🎉
 
 ---
 
 ## 🔐 Permissions
 
-| Permission | Purpose |
-|------------|---------|
-| `READ_STEPS` | View step count |
-| `READ_HEART_RATE` | Monitor heart rate |
-| `READ_SLEEP` | Track sleep sessions |
-| `READ_NUTRITION` | View meals |
-| `WRITE_NUTRITION` | Log meals |
+All permissions are **READ-ONLY** for privacy and safety:
+
+| Permission | Purpose | Data Types |
+|------------|---------|------------|
+| `READ_STEPS` | View daily/weekly/monthly step counts | `STEPS` |
+| `READ_HEART_RATE` | Monitor heart rate measurements | `HEART_RATE` |
+| `READ_SLEEP` | Track sleep sessions with metrics | `SLEEP`, `BLOOD_OXYGEN`, `SKIN_TEMPERATURE` |
+| `READ_WATER_INTAKE` | View daily hydration levels | `WATER_INTAKE` |
+| `READ_EXERCISE` | Access workout/exercise history | `EXERCISE` |
+| `READ/WRITE_NUTRITION` | View and log meals | `NUTRITION` |
+
+> ℹ️ **Note**: This app only reads data from Samsung Health. Water Intake and Workout History are display-only (no write access).
+
+---
+
+## 📱 Screens Overview
+
+### Home Screen
+- **2x3 Grid Layout** with large emoji cards
+- **Categories**: Steps 👟, Heart Rate ❤️, Sleep 😴, Water 💧, Workouts 🏋️
+- **Glass Effect** with radial glows per category
+- **One-Tap Access** to each health metric
+
+### Steps Screen
+- **Day View**: Hourly breakdown with step counts
+- **Week View**: 7-day bar chart (Sun-Sat)
+- **Month View**: Full calendar with color-coded activity levels
+- **Swipe Navigation**: Horizontal pager between time periods
+
+### Water Intake Screen
+- **Animated Glass**: Realistic water wave using Canvas
+- **Dynamic Fill**: Visual representation of intake vs. goal
+- **Smooth Animation**: Continuous sinusoidal wave motion
+- **Daily Tracking**: Total intake display
+
+### Workout History Screen
+- **Day View**: List of workouts with time, duration
+- **Week View**: Bar chart showing workout counts per day
+- **Month View**: Calendar grid with workout intensity colors
+- **Exercise Types**: 40+ types with unique emojis (🏃 🚴 🏊 🧘 🥊)
 
 ---
 
@@ -140,22 +220,50 @@ healthdiary/
 |--------|----------|--------------|
 | **UI Framework** | XML Views | 100% Jetpack Compose |
 | **Design** | Material 2 | Liquid Glass + Neo-Neon |
-| **Architecture** | Direct SDK calls | Clean Architecture (MVVM + UseCase) |
+| **Architecture** | Direct SDK calls | Clean Architecture (MVVM) |
 | **DI** | Manual Factory | Hilt |
 | **State** | LiveData | StateFlow |
 | **Theme** | Static | Persistent Dark/Light with DataStore |
 | **Navigation** | Fragment-based | Compose Navigation |
+| **Charts** | Basic lists | Visual charts & calendars |
+| **Animations** | None | Water waves, smooth transitions |
+| **Home Screen** | List layout | 2-column grid with emojis |
 
 ---
 
-## 📱 Screens Preview
+## 🎨 Screenshots
 
-| Screen | Features |
-|--------|----------|
-| **Home** | Glass cards for each health metric |
-| **Steps** | Day/Week/Month views with HorizontalPager |
-| **Heart Rate** | Daily breakdown by time periods |
-| **Nutrition** | Meal tracking with CRUD operations |
+<!-- Add your screenshots here -->
+<!-- Example structure:
+### Home Screen
+![Home Screen](screenshots/home_screen.png)
+
+### Workout History - Weekly Chart
+![Weekly Chart](screenshots/workout_weekly.png)
+
+### Water Intake Animation
+![Water Animation](screenshots/water_intake.gif)
+-->
+
+> 📸 **Screenshots coming soon!** Run the app and capture your own to see the beautiful Liquid Glass UI in action.
+
+---
+
+## 🚧 Future Enhancements
+
+- [ ] Add write capabilities for Water Intake and Exercise
+- [ ] Implement data export (CSV/JSON)
+- [ ] Add widget support for quick stats
+- [ ] Implement data sync across devices
+- [ ] Add customizable goals and reminders
+- [ ] Include more detailed analytics and insights
+
+---
+
+## 🐛 Known Issues
+
+- Exercise type extraction needs Samsung Health data investigation (currently shows generic "Exercise")
+- Custom exercise types may not display specific names
 
 ---
 
@@ -168,7 +276,8 @@ Copyright © 2024 Samsung Electronics Co., Ltd.
 ## 🙏 Attribution
 
 - **Original Sample**: [Samsung Health Diary](https://developer.samsung.com/health/data/sample/health-diary.html)
-- **Redesigned with**: Gemini 3 Pro & Antigravity
+- **Samsung Health SDK**: [Developer Documentation](https://developer.samsung.com/health/android)
+- **Redesigned with**: Claude 3.7 (Gemini Pro) & Antigravity
 - **Design Inspiration**: Liquid Glass + Neo-Neon aesthetic
 
 ---
@@ -176,5 +285,7 @@ Copyright © 2024 Samsung Electronics Co., Ltd.
 <div align="center">
 
 **Built with ❤️ using Jetpack Compose**
+
+*Track your health, visualize your wellness journey* 🌟
 
 </div>
