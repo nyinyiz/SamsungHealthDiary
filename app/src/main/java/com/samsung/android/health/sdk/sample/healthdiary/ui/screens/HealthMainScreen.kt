@@ -59,6 +59,7 @@ fun HealthMainScreen(
                 AppConstants.HEART_RATE_ACTIVITY -> navController.navigate(Screen.HeartRate.route)
                 AppConstants.SLEEP_ACTIVITY -> navController.navigate(Screen.Sleep.route)
                 AppConstants.WATER_INTAKE_ACTIVITY -> navController.navigate(Screen.WaterIntake.route)
+                AppConstants.EXERCISE_ACTIVITY -> navController.navigate(Screen.Exercise.route)
             }
             viewModel.resetPermissionResponse()
         } else if (permissionResponse.first != AppConstants.WAITING) {
@@ -180,6 +181,19 @@ fun HealthMainScreen(
                             Permission.of(DataTypes.WATER_INTAKE, AccessType.READ)
                         )
                         viewModel.checkForPermission(context, permSet, AppConstants.WATER_INTAKE_ACTIVITY)
+                    }
+                )
+
+                GlassCard(
+                    title = "Workout History",
+                    icon = Icons.Default.Info,
+                    iconTint = Color(0xFFFF6B6B),
+                    glowColor = Color(0xFFFF6B6B),
+                    onClick = {
+                        val permSet = mutableSetOf(
+                            Permission.of(DataTypes.EXERCISE, AccessType.READ)
+                        )
+                        viewModel.checkForPermission(context, permSet, AppConstants.EXERCISE_ACTIVITY)
                     }
                 )
             }

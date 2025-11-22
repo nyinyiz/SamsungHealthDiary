@@ -3,7 +3,7 @@
 
     <application android:name=".HealthDiaryApplication" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/Theme.MyApplication">
 
-        <meta-data android:name="com.samsung.android.health.permission.read" android:value="com.samsung.health.water_intake" />
+        <meta-data android:name="com.samsung.android.health.permission.read" android:value="com.samsung.health.water_intake;com.samsung.health.exercise" />
 
         <activity android:name=".activity.MainActivity" android:exported="true" android:screenOrientation="portrait">
             <intent-filter>

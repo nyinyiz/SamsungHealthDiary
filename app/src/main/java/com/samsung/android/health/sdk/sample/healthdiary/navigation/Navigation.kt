@@ -31,6 +31,7 @@ sealed class Screen(val route: String) {
             "update_food/$uid/$mealType/$insertDate"
     }
     data object WaterIntake : Screen("water_intake")
+    data object Exercise : Screen("exercise")
 }
 
 @Composable
@@ -112,6 +113,12 @@ fun HealthDiaryNavigation(
 
         composable(Screen.WaterIntake.route) {
             com.samsung.android.health.sdk.sample.healthdiary.ui.screens.WaterIntakeScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Exercise.route) {
+            com.samsung.android.health.sdk.sample.healthdiary.ui.screens.ExerciseScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
