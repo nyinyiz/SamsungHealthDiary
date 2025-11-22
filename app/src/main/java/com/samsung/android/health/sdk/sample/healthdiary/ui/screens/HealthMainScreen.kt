@@ -58,6 +58,7 @@ fun HealthMainScreen(
                 AppConstants.STEP_ACTIVITY -> navController.navigate(Screen.Step.route)
                 AppConstants.HEART_RATE_ACTIVITY -> navController.navigate(Screen.HeartRate.route)
                 AppConstants.SLEEP_ACTIVITY -> navController.navigate(Screen.Sleep.route)
+                AppConstants.WATER_INTAKE_ACTIVITY -> navController.navigate(Screen.WaterIntake.route)
             }
             viewModel.resetPermissionResponse()
         } else if (permissionResponse.first != AppConstants.WAITING) {
@@ -166,6 +167,19 @@ fun HealthMainScreen(
                             Permission.of(DataTypes.SKIN_TEMPERATURE, AccessType.READ)
                         )
                         viewModel.checkForPermission(context, permSet, AppConstants.SLEEP_ACTIVITY)
+                    }
+                )
+
+                GlassCard(
+                    title = "Water Intake",
+                    icon = Icons.Default.Info, // Replace with appropriate icon if available
+                    iconTint = CyanGlow,
+                    glowColor = CyanGlow,
+                    onClick = {
+                        val permSet = mutableSetOf(
+                            Permission.of(DataTypes.WATER_INTAKE, AccessType.READ)
+                        )
+                        viewModel.checkForPermission(context, permSet, AppConstants.WATER_INTAKE_ACTIVITY)
                     }
                 )
             }

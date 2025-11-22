@@ -25,6 +25,7 @@ object AppConstants {
     const val BUNDLE_KEY_NUTRITION_DATA = "NUTRITION_DATA"
     const val CHOOSE_FOOD_ACTIVITY = 4
     const val UPDATE_FOOD_ACTIVITY = 5
+    const val WATER_INTAKE_ACTIVITY = 6
     const val NO_WRITE_PERMISSION = -1
     const val APP_ID = "com.samsung.android.health.sdk.sample.healthdiary"
 }
