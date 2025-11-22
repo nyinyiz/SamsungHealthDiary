@@ -22,7 +22,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.time.LocalDateTime
 import kotlinx.coroutines.launch
 
-class SleepViewModel(private val healthDataStore: HealthDataStore) :
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class SleepViewModel @Inject constructor(private val healthDataStore: HealthDataStore) :
     ViewModel() {
 
     private val _dailySleepData = MutableStateFlow<List<HealthDataPoint>>(emptyList())
