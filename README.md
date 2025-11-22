@@ -277,7 +277,7 @@ Copyright © 2024 Samsung Electronics Co., Ltd.
 
 - **Original Sample**: [Samsung Health Diary](https://developer.samsung.com/health/data/sample/health-diary.html)
 - **Samsung Health SDK**: [Developer Documentation](https://developer.samsung.com/health/android)
-- **Redesigned with**: Claude 3.7 (Gemini Pro) & Antigravity
+- **Redesigned with**: Gemini 3 Pro & Antigravity
 - **Design Inspiration**: Liquid Glass + Neo-Neon aesthetic
 
 ---
