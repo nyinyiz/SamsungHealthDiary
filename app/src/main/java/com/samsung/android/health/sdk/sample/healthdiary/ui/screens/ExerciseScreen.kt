@@ -6,6 +6,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -248,6 +251,9 @@ private fun WeekView(
     isLoading: Boolean,
     weekStart: LocalDate
 ) {
+    val weekEnd = weekStart.plusDays(6)
+    val today = LocalDate.now()
+    
     when {
         isLoading -> {
             Box(
@@ -258,31 +264,143 @@ private fun WeekView(
             }
         }
         else -> {
-            // Group exercises by day
+            // Group exercises by day and count them
             val exercisesByDay = remember(exerciseList, weekStart) {
-                val grouped = mutableMapOf<LocalDate, MutableList<HealthDataPoint>>()
+                val grouped = mutableMapOf<LocalDate, Int>()
                 exerciseList.forEach { exercise ->
                     val date = exercise.startTime.atZone(ZoneId.systemDefault()).toLocalDate()
-                    grouped.getOrPut(date) { mutableListOf() }.add(exercise)
+                    grouped[date] = (grouped[date] ?: 0) + 1
                 }
-                grouped
+                
+                // Create list of 7 days with counts
+                (0..6).map { offset ->
+                    val date = weekStart.plusDays(offset.toLong())
+                    date to (grouped[date] ?: 0)
+                }
             }
+            
+            val maxWorkouts = exercisesByDay.maxOfOrNull { it.second } ?: 0
 
-            LazyColumn(
+            Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Show each day of the week
-                (0..6).forEach { offset ->
-                    val date = weekStart.plusDays(offset.toLong())
-                    val workoutsForDay = exercisesByDay[date] ?: emptyList()
-                    
-                    item {
-                        DaySection(
-                            date = date,
-                            workouts = workoutsForDay
-                        )
+                // Chart Container
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(GlassWhite10)
+                        .border(1.dp, GlassBorder, RoundedCornerShape(20.dp))
+                        .padding(20.dp)
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Header
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Weekly Overview",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = TextPrimary
+                                )
+                                Text(
+                                    text = "${weekStart.format(DateTimeFormatter.ofPattern("MMM dd"))} - ${weekEnd.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))}",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = TextSecondary,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
+                        }
+
+                        // Bar Chart
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            exercisesByDay.forEach { (date, count) ->
+                                val isFutureDay = date.isAfter(today)
+                                val isToday = date.isEqual(today)
+                                val heightFraction = if (maxWorkouts > 0 && !isFutureDay) count.toFloat() / maxWorkouts.toFloat() else 0f
+                                val barHeight = (180 * heightFraction).coerceAtLeast(if (isFutureDay) 0f else 8f).dp
+
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Bottom
+                                ) {
+                                    // Count text
+                                    if (count > 0 && !isFutureDay) {
+                                        Text(
+                                            text = count.toString(),
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = TextSecondary,
+                                            modifier = Modifier.padding(bottom = 4.dp)
+                                        )
+                                    }
+
+                                    // Bar
+                                    if (!isFutureDay && count > 0) {
+                                        Box(
+                                            modifier = Modifier
+                                                .width(32.dp)
+                                                .height(barHeight)
+                                                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                                                .background(
+                                                    brush = Brush.verticalGradient(
+                                                        colors = if (isToday) listOf(
+                                                            Color(0xFFFF6B6B),
+                                                            Color(0xFFFF6B6B).copy(alpha = 0.8f)
+                                                        ) else listOf(
+                                                            Color(0xFFFF9A8B),
+                                                            Color(0xFFFF9A8B).copy(alpha = 0.7f)
+                                                        )
+                                                    )
+                                                )
+                                        )
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .width(32.dp)
+                                                .height(8.dp)
+                                                .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                                .background(GlassWhite10)
+                                        )
+                                    }
+
+                                    // Day label
+                                    Text(
+                                        text = date.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).first().toString(),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = if (isToday) Color(0xFFFF6B6B) else TextDisabled,
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
+                
+                Text(
+                    text = "Tap a bar to view that day's workouts",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = TextDisabled,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
         }
     }
@@ -303,27 +421,146 @@ private fun MonthView(
                 CircularProgressIndicator(color = CyanGlow)
             }
         }
-        exerciseList.isEmpty() -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No workouts this month",
-                    fontSize = 18.sp,
-                    color = LocalGradientColors.current.textSecondary
-                )
-            }
-        }
         else -> {
-            LazyColumn(
+            // Group exercises by day and count them
+            val exercisesByDay = remember(exerciseList) {
+                val grouped = mutableMapOf<LocalDate, Int>()
+                exerciseList.forEach { exercise ->
+                    val date = exercise.startTime.atZone(ZoneId.systemDefault()).toLocalDate()
+                    grouped[date] = (grouped[date] ?: 0) + 1
+                }
+                grouped
+            }
+
+            val firstDayOfMonth = currentMonth.atDay(1)
+            val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7
+            val daysInMonth = currentMonth.lengthOfMonth()
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(GlassWhite10)
+                    .border(1.dp, GlassBorder, RoundedCornerShape(20.dp))
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(exerciseList) { exercise ->
-                    WorkoutCard(exercise)
+                Text(
+                    text = currentMonth.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault()) + " ${currentMonth.year}",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary
+                )
+
+                // Day headers
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    listOf("S", "M", "T", "W", "T", "F", "S").forEach { day ->
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = day,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = TextDisabled
+                            )
+                        }
+                    }
+                }
+
+                // Calendar grid
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(7),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Empty cells before first day
+                    gridItems((0 until firstDayOfWeek).toList()) {
+                        Box(modifier = Modifier.aspectRatio(1f))
+                    }
+
+                    // Days of month
+                    gridItems((1..daysInMonth).toList()) { day ->
+                        val date = currentMonth.atDay(day)
+                        val workoutCount = exercisesByDay[date] ?: 0
+                        val isToday = date == LocalDate.now()
+
+                        // Color based on workout count
+                        val backgroundColor = when {
+                            workoutCount == 0 -> androidx.compose.ui.graphics.Color.Transparent
+                            workoutCount == 1 -> Color(0xFFFFB74D).copy(alpha = 0.3f) // Light orange for 1
+                            workoutCount == 2 -> Color(0xFFFF9800).copy(alpha = 0.4f) // Orange for 2
+                            else -> Color(0xFFFF6B6B).copy(alpha = 0.5f) // Red for 3+
+                        }
+
+                        val borderColor = if (isToday) Color(0xFFFF6B6B) else androidx.compose.ui.graphics.Color.Transparent
+
+                        Box(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .clip(CircleShape)
+                                .background(backgroundColor)
+                                .border(
+                                    width = if (isToday) 1.dp else 0.dp,
+                                    color = borderColor,
+                                    shape = CircleShape
+                                )
+                                .padding(4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = day.toString(),
+                                    fontSize = 14.sp,
+                                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (workoutCount > 0 || isToday) TextPrimary else TextDisabled
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Legend
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    LegendItem(color = Color(0xFFFFB74D), label = "1 workout")
+                    LegendItem(color = Color(0xFFFF9800), label = "2 workouts")
+                    LegendItem(color = Color(0xFFFF6B6B), label = "3+ workouts")
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LegendItem(color: Color, label: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(12.dp)
+                .clip(CircleShape)
+                .background(color.copy(alpha = 0.4f))
+        )
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            color = TextSecondary
+        )
     }
 }
 
