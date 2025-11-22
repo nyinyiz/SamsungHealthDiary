@@ -1,6 +1,10 @@
 package com.samsung.android.health.sdk.sample.healthdiary.ui.screens
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,6 +34,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -61,6 +68,18 @@ fun WaterIntakeScreen(
         targetValue = fillRatio,
         animationSpec = tween(durationMillis = 1000),
         label = "WaterFillAnimation"
+    )
+
+    // Wave animation
+    val infiniteTransition = rememberInfiniteTransition(label = "WaveAnimation")
+    val waveOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "WaveOffset"
     )
 
     LaunchedEffect(Unit) {
@@ -133,21 +152,52 @@ fun WaterIntakeScreen(
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        // Water Fill
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(animatedFillRatio)
-                                .align(Alignment.BottomCenter)
-                                .background(
+                        // Water Fill with Wave Effect
+                        Canvas(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            val canvasWidth = size.width
+                            val canvasHeight = size.height
+                            val waterHeight = canvasHeight * animatedFillRatio
+                            
+                            if (waterHeight > 0f) {
+                                val wavePath = Path()
+                                val waveAmplitude = 8f
+                                val waveLength = canvasWidth / 2f
+                                
+                                // Start from bottom left
+                                wavePath.moveTo(0f, canvasHeight)
+                                
+                                // Draw to bottom of wave
+                                wavePath.lineTo(0f, canvasHeight - waterHeight + waveAmplitude)
+                                
+                                // Draw the wave at the top of water
+                                var x = 0f
+                                while (x <= canvasWidth) {
+                                    val angle = (x / waveLength * Math.PI * 2 + Math.toRadians(waveOffset.toDouble())).toFloat()
+                                    val y = canvasHeight - waterHeight + (kotlin.math.sin(angle) * waveAmplitude)
+                                    wavePath.lineTo(x, y)
+                                    x += 5f
+                                }
+                                
+                                // Complete the path
+                                wavePath.lineTo(canvasWidth, canvasHeight)
+                                wavePath.close()
+                                
+                                // Draw the water with gradient
+                                drawPath(
+                                    path = wavePath,
                                     brush = Brush.verticalGradient(
                                         colors = listOf(
                                             Color(0xFF4FC3F7), // Light Blue
                                             Color(0xFF0288D1)  // Darker Blue
-                                        )
+                                        ),
+                                        startY = canvasHeight - waterHeight,
+                                        endY = canvasHeight
                                     )
                                 )
-                        )
+                            }
+                        }
 
                         // Text Overlay
                         Column(
